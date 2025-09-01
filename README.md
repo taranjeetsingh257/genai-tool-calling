@@ -1,5 +1,9 @@
 # Tool Calling in LLMs
 
+## Project Summary
+
+This project demonstrates tool calling functionality with Large Language Models (LLMs) to overcome knowledge limitations. The LLM doesn't directly call tools - instead, when it identifies a need for external information, it includes structured tool call requests in its response. I implemented the tool function call logic that processes these requests, executes the appropriate external API calls (web search in this case), and feeds the results back to the LLM for a comprehensive response. This approach enables the LLM to provide accurate, up-to-date information beyond its training data.
+
 # Getting Started
 
 ## Prerequisites
