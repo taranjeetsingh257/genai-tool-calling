@@ -38,7 +38,7 @@ GROQ_API_KEY=""
 TAVILY_API_KEY=""
 ```
 
-(Oe Rename `.env.exmaple` file to `.env`)
+(Or Rename `.env.exmaple` file to `.env`)
 
 ## Running the Application
 
