@@ -1,4 +1,5 @@
 # Tool Calling in LLMs
+![tool-calling](https://github.com/user-attachments/assets/fbeb27d4-9f77-487b-aae7-614157fc5d30)
 
 ## Project Summary
 
