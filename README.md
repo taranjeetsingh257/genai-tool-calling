@@ -85,6 +85,11 @@ GROQ documentation used in this project:
 -   [Quickstart Guide](https://console.groq.com/docs/quickstart)
 -   [Tool Use Documentation](https://console.groq.com/docs/tool-use)
 
+Tavily documentation:
+
+-   [Quickstart](https://docs.tavily.com/documentation/quickstart)
+-   [Tavily Search API Reference](https://docs.tavily.com/documentation/api-reference/endpoint/search)
+
 ```
 
 ```
