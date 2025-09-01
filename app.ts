@@ -21,103 +21,79 @@ async function main() {
         // Set a user message for the assistant to respond to.
         {
             role: 'user',
-            content: 'When was iphone 16 launched',
+            content: 'What is the current weather in Washington, DC',
         },
     ];
 
-    const completions = await groq.chat.completions.create({
-        model: 'llama-3.3-70b-versatile',
-        temperature: 0,
-        messages: messages,
-        tools: [
-            {
-                type: 'function',
-                function: {
-                    name: 'webSearch',
-                    description:
-                        'Search the latest information and realtime data on the internet',
-                    parameters: {
-                        type: 'object',
-                        properties: {
-                            query: {
-                                type: 'string',
-                                description:
-                                    'The search query to perform search on.',
+    while (true) {
+        const completions = await groq.chat.completions.create({
+            model: 'llama-3.3-70b-versatile',
+            temperature: 0,
+            messages: messages,
+            tools: [
+                {
+                    type: 'function',
+                    function: {
+                        name: 'webSearch',
+                        description:
+                            'Search the latest information and realtime data on the internet',
+                        parameters: {
+                            type: 'object',
+                            properties: {
+                                query: {
+                                    type: 'string',
+                                    description:
+                                        'The search query to perform search on.',
+                                },
                             },
+                            required: ['query'],
                         },
-                        required: ['query'],
                     },
                 },
-            },
-        ],
-        tool_choice: 'auto',
-    });
+            ],
+            tool_choice: 'auto',
+        });
 
-    if (completions.choices[0]?.message) {
-        messages.push(
-            completions.choices[0].message as ChatCompletionAssistantMessage
-        );
-    }
-    const toolCalls = completions.choices[0]?.message.tool_calls;
-
-    if (!toolCalls) {
-        console.log(`Assistant: ${completions.choices[0]?.message.content}`);
-        return;
-    }
-
-    for (const tool of toolCalls) {
-        console.log('tool: ', tool);
-        // tool:  {
-        //   id: '0wpm5z3mz',
-        //   type: 'function',
-        //   function: { name: 'webSearch', arguments: '{"query":"iPhone 16 launch date"}' }
-        // }
-        const functionName: string = tool.function.name;
-        const functionParams: string = tool.function.arguments;
-
-        if (functionName === 'webSearch') {
-            const toolResult = await webSearch(JSON.parse(functionParams));
-
-            console.log('Tool result: ', toolResult);
-
-            messages.push({
-                role: 'tool',
-                tool_call_id: tool.id,
-                name: functionName,
-                content: toolResult,
-            });
+        if (completions.choices[0]?.message) {
+            messages.push(
+                completions.choices[0].message as ChatCompletionAssistantMessage
+            );
         }
+        const toolCalls = completions.choices[0]?.message.tool_calls;
+
+        if (!toolCalls) {
+            console.log(
+                `Assistant: ${completions.choices[0]?.message.content}`
+            );
+            break;
+        }
+
+        for (const tool of toolCalls) {
+            // console.log('tool: ', tool);
+            // tool:  {
+            //   id: '0wpm5z3mz',
+            //   type: 'function',
+            //   function: { name: 'webSearch', arguments: '{"query":"iPhone 16 launch date"}' }
+            // }
+            const functionName: string = tool.function.name;
+            const functionParams: string = tool.function.arguments;
+
+            if (functionName === 'webSearch') {
+                const toolResult = await webSearch(JSON.parse(functionParams));
+
+                // console.log('Tool result: ', toolResult);
+
+                messages.push({
+                    role: 'tool',
+                    tool_call_id: tool.id,
+                    name: functionName,
+                    content: toolResult,
+                });
+            }
+        }
+
+        // console.log(JSON.stringify(completions.choices[0]?.message, null, 2));
     }
-
-    const completions2 = await groq.chat.completions.create({
-        model: 'llama-3.3-70b-versatile',
-        temperature: 0,
-        messages: messages,
-        tools: [
-            {
-                type: 'function',
-                function: {
-                    name: 'webSearch',
-                    description:
-                        'Search the latest information and realtime data on the internet',
-                    parameters: {
-                        type: 'object',
-                        properties: {
-                            query: {
-                                type: 'string',
-                                description:
-                                    'The search query to perform search on.',
-                            },
-                        },
-                        required: ['query'],
-                    },
-                },
-            },
-        ],
-        tool_choice: 'auto',
-    });
-
-    console.log(JSON.stringify(completions2.choices[0]?.message, null, 2));
 }
 
 main();
