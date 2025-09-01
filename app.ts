@@ -2,12 +2,18 @@ import Groq from 'groq-sdk';
 import dotenv from 'dotenv';
 import { tavily } from '@tavily/core';
 import { ChatCompletionMessage, ChatCompletionAssistantMessage } from './types';
+import readline from 'node:readline/promises';
 
 dotenv.config();
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 const tvly = tavily({ apiKey: process.env.TAVILY_API_KEY as string });
 
 async function main() {
+    const rl = readline.createInterface({
+        input: process.stdin,
+        output: process.stdout,
+        terminal: false,
+    });
     const messages: ChatCompletionMessage[] = [
         // Set an optional system message. This sets the behavior of the
         // assistant and can be used to provide specific instructions for
@@ -18,82 +24,94 @@ async function main() {
                 You have access to the following tools:
                 1. webSearch({query}: {query: string}) // Search the latest information and realtime data on the internet.`,
         },
-        // Set a user message for the assistant to respond to.
-        {
-            role: 'user',
-            content: 'What is the current weather in Washington, DC',
-        },
     ];
 
     while (true) {
-        const completions = await groq.chat.completions.create({
-            model: 'llama-3.3-70b-versatile',
-            temperature: 0,
-            messages: messages,
-            tools: [
-                {
-                    type: 'function',
-                    function: {
-                        name: 'webSearch',
-                        description:
-                            'Search the latest information and realtime data on the internet',
-                        parameters: {
-                            type: 'object',
-                            properties: {
-                                query: {
-                                    type: 'string',
-                                    description:
-                                        'The search query to perform search on.',
-                                },
-                            },
-                            required: ['query'],
-                        },
-                    },
-                },
-            ],
-            tool_choice: 'auto',
-        });
-
-        if (completions.choices[0]?.message) {
-            messages.push(
-                completions.choices[0].message as ChatCompletionAssistantMessage
-            );
-        }
-        const toolCalls = completions.choices[0]?.message.tool_calls;
-
-        if (!toolCalls) {
-            console.log(
-                `Assistant: ${completions.choices[0]?.message.content}`
-            );
+        const question = await rl.question('You: ');
+        // exit if user types bye OR exit
+        if (question === 'bye' || question === 'exit') {
+            console.log('Goodbye!');
             break;
         }
 
-        for (const tool of toolCalls) {
-            // console.log('tool: ', tool);
-            // tool:  {
-            //   id: '0wpm5z3mz',
-            //   type: 'function',
-            //   function: { name: 'webSearch', arguments: '{"query":"iPhone 16 launch date"}' }
-            // }
-            const functionName: string = tool.function.name;
-            const functionParams: string = tool.function.arguments;
+        messages.push({
+            role: 'user',
+            content: question,
+        });
+        while (true) {
+            const completions = await groq.chat.completions.create({
+                model: 'llama-3.3-70b-versatile',
+                temperature: 0,
+                messages: messages,
+                tools: [
+                    {
+                        type: 'function',
+                        function: {
+                            name: 'webSearch',
+                            description:
+                                'Search the latest information and realtime data on the internet',
+                            parameters: {
+                                type: 'object',
+                                properties: {
+                                    query: {
+                                        type: 'string',
+                                        description:
+                                            'The search query to perform search on.',
+                                    },
+                                },
+                                required: ['query'],
+                            },
+                        },
+                    },
+                ],
+                tool_choice: 'auto',
+            });
 
-            if (functionName === 'webSearch') {
-                const toolResult = await webSearch(JSON.parse(functionParams));
-
-                // console.log('Tool result: ', toolResult);
-
-                messages.push({
-                    role: 'tool',
-                    tool_call_id: tool.id,
-                    name: functionName,
-                    content: toolResult,
-                });
+            if (completions.choices[0]?.message) {
+                messages.push(
+                    completions.choices[0]
+                        .message as ChatCompletionAssistantMessage
+                );
             }
-        }
+            const toolCalls = completions.choices[0]?.message.tool_calls;
 
-        // console.log(JSON.stringify(completions.choices[0]?.message, null, 2));
+            if (!toolCalls) {
+                console.log(
+                    `Assistant: ${completions.choices[0]?.message.content}`
+                );
+                break;
+            }
+
+            for (const tool of toolCalls) {
+                // console.log('tool: ', tool);
+                // tool:  {
+                //   id: '0wpm5z3mz',
+                //   type: 'function',
+                //   function: { name: 'webSearch', arguments: '{"query":"iPhone 16 launch date"}' }
+                // }
+                const functionName: string = tool.function.name;
+                const functionParams: string = tool.function.arguments;
+
+                if (functionName === 'webSearch') {
+                    const toolResult = await webSearch(
+                        JSON.parse(functionParams)
+                    );
+
+                    // console.log('Tool result: ', toolResult);
+
+                    messages.push({
+                        role: 'tool',
+                        tool_call_id: tool.id,
+                        name: functionName,
+                        content: toolResult,
+                    });
+                }
+            }
+
+            // console.log(JSON.stringify(completions.choices[0]?.message, null, 2));
+        }
     }
+    rl.close();
 }
 
 main();
