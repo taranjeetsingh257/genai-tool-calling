@@ -70,6 +70,14 @@ By implementing tool calling, the model could:
 
 For this project, I implemented a Web Search Tool that integrates with the LLM through a structured API interface. When the model encounters queries requiring up-to-date information (like the iPhone 16 launch date, current weather in a city, etc.), it automatically invokes this tool, fetches real-time data from search engines, and incorporates the retrieved information into its response. This implementation demonstrates how tool calling can overcome the knowledge cutoff limitations of LLMs by providing access to current information without requiring model retraining.
 
+Available options for these tools:
+
+1.  [Google Search API](https://serper.dev/)
+2.  [Brave Browser Search](https://brave.com/search/api/)
+3.  [Tavily Search](https://www.tavily.com/)
+
+Used for this project: [Tavily Search](https://www.tavily.com/)
+
 ## Resources
 
 GROQ documentation used in this project:
