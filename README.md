@@ -1,5 +1,77 @@
 # Tool Calling in LLMs
 
+# Getting Started
+
+## Prerequisites
+
+Before running this project, you'll need:
+
+1. Node.js and npm installed
+2. API keys for:
+    - GROQ API - Get it from [console.groq.com](https://console.groq.com/)
+    - Tavily Search API - Get it from [tavily.com](https://www.tavily.com/)
+
+## Installation
+
+1. Clone the repository:
+
+```bash
+git clone https://github.com/taranjeetsingh257/genai-tool-calling.git
+cd tool-calling
+```
+
+2. Install dependencies:
+
+```bash
+npm install
+```
+
+3. Create a .env file in the root directory with your API keys:
+
+```
+GROQ_API_KEY=""
+TAVILY_API_KEY=""
+```
+
+(Oe Rename `.env.exmaple` file to `.env`)
+
+## Running the Application
+
+Start the application in development mode:
+
+```bash
+npm run dev
+```
+
+This will launch an interactive CLI where you can ask questions and see the tool calling in action.
+
+## Sample Interaction
+
+```
+You: when was iphone 16 launched
+Calling Web Search Tool...
+Assistant: The iPhone 16 was launched on September 20, 2024. It was announced alongside the iPhone 16 Pro and Pro Max during the Apple Event at Apple Park in Cupertino, California, on September 9, 2024. The pre-order for the new iPhone 16 and iPhone 16 Pro started on Friday, September 13, 2024.
+
+You: what is the current weather in Washington, DC?
+Calling Web Search Tool...
+Assistant: The current weather in Washington, DC is partly cloudy with a temperature of 19.4°C (66.9°F) and a humidity of 59%. The wind is blowing at 2.2 mph (3.6 kph) from the NNE direction. There is no precipitation, and the feels-like temperature is also 19.4°C (66.9°F).
+
+You: Hello! How are you?
+Assistant: I'm doing well, thanks for asking. I'm a large language model, so I don't have feelings or emotions like humans do, but I'm functioning properly and ready to help with any questions or tasks you may have. How about you? How's your day going so far?
+
+You: bye
+Goodbye!
+```
+
+### Why Tool Calling Wasn't Activated for "Hello! How are you?"
+
+The tool calling feature was not activated for the greeting "Hello! How are you?" because:
+
+1. This query doesn't require real-time or external information - it's a conversational prompt that the LLM can handle with its existing knowledge
+2. The model is programmed to use tools only when necessary (controlled by `tool_choice: 'auto'` parameter)
+
+In contrast, questions about the iPhone 16 launch date and current weather required access to information beyond the model's training data(`llama-3.3-70b-versatile` [(knowledge cutoff: December 2023)](https://github.com/meta-llama/llama-models/blob/main/models/llama3_3/MODEL_CARD.md), which is why the web search tool was called in those cases.
+
 ## Why Tool Calling is Necessary
 
 Large Language Models (LLMs) are trained on data up to a specific cutoff date, which creates limitations when dealing with recent information. This project demonstrates this limitation and how tool calling can solve it.
@@ -80,16 +152,12 @@ Used for this project: [Tavily Search](https://www.tavily.com/)
 
 ## Resources
 
-GROQ documentation used in this project:
+GROQ:
 
 -   [Quickstart Guide](https://console.groq.com/docs/quickstart)
 -   [Tool Use Documentation](https://console.groq.com/docs/tool-use)
 
-Tavily documentation:
+Tavily:
 
 -   [Quickstart](https://docs.tavily.com/documentation/quickstart)
 -   [Tavily Search API Reference](https://docs.tavily.com/documentation/api-reference/endpoint/search)
-
-```
-
-```
